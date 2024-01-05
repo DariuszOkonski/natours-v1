@@ -1,12 +1,12 @@
 const fs = require('fs');
 
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8')
+  fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8'),
 );
 
 exports.checkID = (req, res, next, val) => {
   console.log(`REMOVE THIS MIDDLEWARE => Tour id is: ${val}`);
-  if (isNaN(val * 1) || val * 1 > tours.length) {
+  if (val * 1 > tours.length) {
     return res.status(404).json({
       status: 'fail',
       message: 'Invalid ID',
@@ -60,7 +60,7 @@ exports.createTour = (req, res) => {
           tour: newTour,
         },
       });
-    }
+    },
   );
 };
 
