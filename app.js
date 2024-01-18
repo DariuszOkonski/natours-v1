@@ -4,7 +4,7 @@ const morgan = require('morgan');
 
 const app = express();
 // middlewares
-app.use(morgan('dev'))
+app.use(morgan('dev'));
 app.use(express.json());
 app.use((req, res, next) => {
   console.log('Hello from the middleware');
@@ -16,10 +16,8 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
 const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
 // route handlers
@@ -69,7 +67,7 @@ const createTour = (req, res) => {
           tour: newTour,
         },
       });
-    },
+    }
   );
 };
 
@@ -106,49 +104,49 @@ const deleteTour = (req, res) => {
 const getAllUsers = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'getAllUsers'
-  })
-}
+    message: 'getAllUsers',
+  });
+};
 
 const createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'createUser'
-  })
-}
+    message: 'createUser',
+  });
+};
 
 const getUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: `getUser: ${req.params.id}`
-  })
-}
+    message: `getUser: ${req.params.id}`,
+  });
+};
 
 const updateUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: `UpdateUser: ${req.params.id}`
-  })
-}
+    message: `UpdateUser: ${req.params.id}`,
+  });
+};
 
 const deleteUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: `DeleteUser: ${req.params.id}`
-  })
-}
+    message: `DeleteUser: ${req.params.id}`,
+  });
+};
 
 // routes
+const tourRouter = express.Router();
+const userRouter = express.Router();
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
-app
-  .route('/api/v1/tours/:id')
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
+tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
-app.route('/api/v1/users').get(getAllUsers).post(createUser)
-app.route('/api/v1/users/:id').get(getUser).patch(updateUser).delete(deleteUser)
+userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
 // start server
 const port = 3000;
