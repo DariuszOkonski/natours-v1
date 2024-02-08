@@ -2,24 +2,37 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    // console.log(req.query);
-    // 1) Filtering
+    console.log(req.query);
+    // 1A) Filtering
     // eslint-disable-next-line node/no-unsupported-features/es-syntax
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // 2) Advanced filtering
+    // 1B) Advanced filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
-    const query = await Tour.find(JSON.parse(queryStr));
+    let query = await Tour.find(JSON.parse(queryStr));
 
-    // const query = await Tour.find()
-    //   .where('duration')
-    //   .equals(req.query.duration)
-    //   .where('difficulty')
-    //   .equals(req.query.difficulty);
+    // 2) Sorting
+    if (req.query.sort) {
+      if (req.query.sort.charAt(0) === '-') {
+        query = query.sort((a, b) => b.price - a.price);
+      } else {
+        query = query.sort((a, b) => a.price - b.price);
+      }
+    }
+
+    // 3) Field limiting
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      console.log('before query');
+      console.log(query);
+      console.log(fields);
+
+      query = query.select(fields);
+    }
 
     const tours = await query;
 
@@ -31,7 +44,7 @@ exports.getAllTours = async (req, res) => {
   } catch (err) {
     res.status(404).json({
       status: 'fail',
-      message: err,
+      message: err.message,
     });
   }
 };
