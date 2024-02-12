@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 exports.aliasTopTours = async (req, res, next) => {
   req.query.limit = '5';
@@ -10,48 +11,8 @@ exports.aliasTopTours = async (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    // console.log(req.query);
-    // 1A) Filtering
-    // eslint-disable-next-line node/no-unsupported-features/es-syntax
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    // 1B) Advanced filtering
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-    let query = await Tour.find(JSON.parse(queryStr));
-
-    // 2) Sorting
-    if (req.query.sort) {
-      if (req.query.sort.charAt(0) === '-') {
-        query = query.sort((a, b) => b.price - a.price);
-      } else {
-        query = query.sort((a, b) => a.price - b.price);
-      }
-    }
-
-    // 3) Field limiting - some problems with query.select (not a function error)
-    // if (req.query.fields) {
-    //   const fields = req.query.fields.split(',').join(' ');
-    //   query = query.select(fields);
-    // }
-
-    // 4) Pagination - not working
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 1;
-    const skip = (page - 1) * limit;
-    // query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) {
-        throw new Error('This page does not exist');
-      }
-    }
-
-    const tours = await query;
+    const features = new APIFeatures(Tour.find(), req.query).filter().sort();
+    const tours = await features.query;
 
     res.status(200).json({
       status: 'success',
